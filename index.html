@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Feira</title>
+    <style>
+        :root {
+            --color-background: #fcfcf9;
+            --color-surface: #fffffd;
+            --color-text: #134252;
+            --color-text-secondary: #62666d;
+            --color-primary: #21808d;
+            --color-primary-hover: #1d7480;
+            --color-border: rgba(94, 82, 64, 0.2);
+            --color-card-border: rgba(94, 82, 64, 0.12);
+            --color-secondary: rgba(94, 82, 64, 0.12);
+            --color-secondary-hover: rgba(94, 82, 64, 0.2);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.04);
+            --radius-base: 8px;
+            --radius-lg: 12px;
+            --space-8: 8px;
+            --space-12: 12px;
+            --space-16: 16px;
+            --space-24: 24px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-background: #1f2121;
+                --color-surface: #262828;
+                --color-text: #f5f5f5;
+                --color-text-secondary: rgba(167, 169, 169, 0.7);
+                --color-primary: #32b8c6;
+                --color-primary-hover: #2da6b2;
+                --color-border: rgba(119, 124, 124, 0.3);
+                --color-card-border: rgba(119, 124, 124, 0.2);
+                --color-secondary: rgba(119, 124, 124, 0.15);
+                --color-secondary-hover: rgba(119, 124, 124, 0.25);
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--color-background);
+            color: var(--color-text);
+            line-height: 1.5;
+            padding: var(--space-16);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: var(--space-24);
+            padding: var(--space-24) 0;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: var(--space-8);
+        }
+
+        .subtitle {
+            color: var(--color-text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .actions {
+            display: flex;
+            gap: var(--space-12);
+            justify-content: center;
+            margin-bottom: var(--space-24);
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: var(--space-12) var(--space-24);
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-8);
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--color-primary-hover);
+        }
+
+        .btn-secondary {
+            background: var(--color-secondary);
+            color: var(--color-text);
+        }
+
+        .btn-secondary:hover {
+            background: var(--color-secondary-hover);
+        }
+
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-16);
+            margin-bottom: var(--space-24);
+        }
+
+        .category {
+            background: var(--color-surface);
+            border: 1px solid var(--color-card-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-16);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-16);
+            padding-bottom: var(--space-12);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .category-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        .category-count {
+            background: var(--color-secondary);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .item {
+            display: flex;
+            gap: var(--space-12);
+            padding: var(--space-8) 0;
+            align-items: center;
+        }
+
+        .item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--color-primary);
+        }
+
+        .item-label {
+            flex: 1;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .item-qty {
+            width: 60px;
+            padding: 4px var(--space-8);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.9rem;
+            background: var(--color-surface);
+            color: var(--color-text);
+        }
+
+        .item-qty:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-16);
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--color-surface);
+            border-radius: var(--radius-lg);
+            padding: var(--space-24);
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-md);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-16);
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--color-text-secondary);
+            line-height: 1;
+            padding: 4px;
+        }
+
+        .close-btn:hover {
+            color: var(--color-text);
+        }
+
+        .list-output {
+            background: var(--color-background);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            padding: var(--space-16);
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 0.9rem;
+            margin-bottom: var(--space-16);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .copy-btn {
+            width: 100%;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .actions, .modal {
+                display: none !important;
+            }
+            .categories {
+                display: block;
+            }
+            .category {
+                page-break-inside: avoid;
+                margin-bottom: var(--space-16);
+                box-shadow: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .categories {
+                grid-template-columns: 1fr;
+            }
+            .actions {
+                flex-direction: column;
+            }
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛒 Lista de Feira</h1>
+            <p class="subtitle">Selecione os itens e quantidades para sua compra</p>
+        </header>
+
+        <div class="actions">
+            <button class="btn btn-primary" onclick="generateText()">📋 Copiar como Texto</button>
+            <button class="btn btn-secondary" onclick="window.print()">🖨️ Imprimir</button>
+            <button class="btn btn-secondary" onclick="clearAll()">🗑️ Limpar Seleção</button>
+        </div>
+
+        <div class="categories" id="categories"></div>
+    </div>
+
+    <div class="modal" id="textModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Lista de Compras</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="list-output" id="listOutput"></div>
+            <button class="btn btn-primary copy-btn" onclick="copyToClipboard()">📋 Copiar para Área de Transferência</button>
+        </div>
+    </div>
+
+    <script>
+        const groceryData = {
+            "Frutas": [
+                "Banana prata", "Maçã", "Melão", "Laranja pera", "Melancia", "Goiaba", "Tangerina",
+                "Uva preta", "Uva verde", "Manga", "Laranja bahia", "Kiwi", "Ameixa fresca", "Limão"
+            ],
+            "Legumes, Hortaliças e Ovos": [
+                "Ovos", "Tomate", "Tomate cereja", "Batata inglesa", "Cenoura", "Cebola", "Alho",
+                "Pimentão", "Jerimum", "Beterraba", "Alface", "Acelga", "Coentro", "Cebolinha", "Repolho", "Couve"
+            ],
+            "Lanches": [
+                "Amendoim japonês", "Biscoito de chocolate", "Bolacha 3 de maio", "Cream cracker",
+                "Salgadinhos Ulysses", "Cheetos / Pippos", "Biscoitos lanche Ulysses",
+                "Bananinha com chocol.", "Chocolate", "Biscoitos protéicos Wa", "Biscoito de polvilho",
+                "Pipoca bokus", "Bolacha Maria"
+            ],
+            "Mercearia em Geral": [
+                "Café", "Goma de tapioca", "Extrato de tomate", "Molho de tomate", "Creme de leite",
+                "Leite condensado", "Leite em pó integral", "Leite em pó desnatado",
+                "Leite de caixa integral", "Leite de caixa desnatado", "Óleo de cozinha",
+                "Azeite extravirgem", "Ketchup", "Maionese", "Adoçante", "Achocolatado em pó",
+                "Chocolate culinário", "Milho verde em conserva", "Ervilha em conserva",
+                "Batata palha", "Queijo ralado"
+            ],
+            "Queijos e Embutidos": [
+                "Queijo coalho", "Queijo mussarela", "Queijo minas light", "Queijo prato",
+                "Peito de peru", "Presunto light", "Blanquet de peru", "Mortaldela", "Salsicha", "Queijo faixa azul"
+            ],
+            "Outros Laticínios": [
+                "Requeijão tradicional", "Requeijão light", "Iogurte de garrafa gde", "Iogurte em sachê",
+                "Iogurte natural integral", "Iogurte natural desnat.", "Leite fermentado (Yakult)", "Manteiga"
+            ],
+            "Grãos e Farináceos": [
+                "Feijão preto", "Feijão carioquinha", "Feijão macássar", "Arroz branco", "Arroz integral",
+                "Flocão de milho (cuscuz)", "Farinha de mandioca", "Farinha de milho", "Aveia", "Açúcar", "Milho de pipoca"
+            ],
+            "Pães": [
+                "Pão de caixa", "Pão de cachorro quente", "Bisnaguinha", "Torrada"
+            ],
+            "Carne Vermelha e Frango": [
+                "Carne de bife", "Filé mignon", "Carne moída", "Carne de sol",
+                "Filé de peito de frango", "Sobrecoxa de frango"
+            ],
+            "Frutos do Mar": [
+                "Fiilé de tilápia", "Camarão", "Filé de salmão", "Posta de salmão", "Peixe empanado"
+            ],
+            "Outros Frios": [
+                "Legumes congelados", "Feijão verde", "Massa de pastel", "Pão de queijo congelado"
+            ],
+            "Material de Limpeza": [
+                "Água sanitária", "Detergente", "Desinfetante", "Sabão em pó", "Sabão em pedra",
+                "Esponja de lavar pratos", "Pastilha sanitária", "Lustra móveis", "Veja multiúso",
+                "Odorizador de ambiente", "Sacos de lixo"
+            ],
+            "Higiene Pessoal": [
+                "Papel higiênico", "Sabonete", "Pasta de dentes", "Escova de dentes", "Shampoo",
+                "Condicionador", "Desodorante", "Cotonetes", "Sabonete líquido", "Hidratante",
+                "Fio dental", "Barbeador", "Carefree", "Absorvente"
+            ],
+            "Descartáveis e Utilidades": [
+                "Papel toalha", "Guardanapo", "Toalha de limpeza", "Papel filme", "Papel alumínio",
+                "Sacos de comida", "Copos descartáveis", "Vassoura", "Rodo", "Espanador", "Pá",
+                "Rodo de pia", "Pano de chão", "Pano de prato"
+            ],
+            "Temperos": [
+                "Sal refinado", "Pimenta do reino", "Lemon pepper", "Orégano", "Colorau",
+                "Noz moscada", "Páprica", "Açafrão", "Molho shoyu"
+            ],
+            "Dieta": [
+                "Castanha", "Amendoim", "Pasta de amendoim", "Biscoitos protéicos"
+            ],
+            "Bebidas": [
+                "Água com gás", "Água de coco", "Refrigerante", "Suco de uva integral",
+                "Suco de maçã integral", "Nescau / Toddynho", "Vinho"
+            ],
+            "Roupas": [
+                "Sabão líquido (roupas)", "Amaciante", "Passa roupas", "Tira manchas"
+            ]
+        };
+
+        function renderCategories() {
+            const container = document.getElementById('categories');
+            container.innerHTML = '';
+
+            Object.keys(groceryData).forEach(category => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category';
+
+                const header = document.createElement('div');
+                header.className = 'category-header';
+                header.innerHTML = `
+                    <h3 class="category-title">${category}</h3>
+                    <span class="category-count">0</span>
+                `;
+
+                categoryDiv.appendChild(header);
+
+                groceryData[category].forEach((item, index) => {
+                    const itemId = `${category.replace(/\s+/g, '_')}_${index}`;
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'item';
+                    itemDiv.innerHTML = `
+                        <input type="checkbox" id="${itemId}" onchange="updateCount('${category}')">
+                        <label class="item-label" for="${itemId}">${item}</label>
+                        <input type="number" class="item-qty" id="${itemId}_qty" min="1" value="1" disabled>
+                    `;
+
+                    const checkbox = itemDiv.querySelector('input[type="checkbox"]');
+                    const qtyInput = itemDiv.querySelector('input[type="number"]');
+
+                    checkbox.addEventListener('change', function() {
+                        qtyInput.disabled = !this.checked;
+                    });
+
+                    categoryDiv.appendChild(itemDiv);
+                });
+
+                container.appendChild(categoryDiv);
+            });
+        }
+
+        function updateCount(category) {
+            const categoryDiv = Array.from(document.querySelectorAll('.category')).find(
+                div => div.querySelector('.category-title').textContent === category
+            );
+            
+            const checkedItems = categoryDiv.querySelectorAll('input[type="checkbox"]:checked').length;
+            categoryDiv.querySelector('.category-count').textContent = checkedItems;
+        }
+
+        function generateText() {
+            let output = "🛒 LISTA DE FEIRA\n";
+            output += "=" .repeat(50) + "\n\n";
+
+            let hasItems = false;
+
+            Object.keys(groceryData).forEach(category => {
+                const categoryItems = [];
+                groceryData[category].forEach((item, index) => {
+                    const itemId = `${category.replace(/\s+/g, '_')}_${index}`;
+                    const checkbox = document.getElementById(itemId);
+                    if (checkbox && checkbox.checked) {
+                        const qty = document.getElementById(`${itemId}_qty`).value;
+                        categoryItems.push(`  • ${item} ${qty > 1 ? `(${qty})` : ''}`);
+                    }
+                });
+
+                if (categoryItems.length > 0) {
+                    hasItems = true;
+                    output += `📌 ${category.toUpperCase()}\n`;
+                    output += categoryItems.join('\n') + '\n\n';
+                }
+            });
+
+            if (!hasItems) {
+                output += "Nenhum item selecionado.\n\n";
+            }
+
+            output += "=" .repeat(50) + "\n";
+            output += `Gerada em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`;
+
+            document.getElementById('listOutput').textContent = output;
+            document.getElementById('textModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('textModal').classList.remove('active');
+        }
+
+        function copyToClipboard() {
+            const text = document.getElementById('listOutput').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copiado!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            });
+        }
+
+        function clearAll() {
+            if (confirm('Deseja limpar toda a seleção?')) {
+                document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    cb.checked = false;
+                    const qtyInput = document.getElementById(`${cb.id}_qty`);
+                    if (qtyInput) {
+                        qtyInput.disabled = true;
+                        qtyInput.value = 1;
+                    }
+                });
+                document.querySelectorAll('.category-count').forEach(count => {
+                    count.textContent = '0';
+                });
+            }
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('textModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        renderCategories();
+    </script>
+</body>
+</html>
